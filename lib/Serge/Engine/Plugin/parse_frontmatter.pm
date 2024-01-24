@@ -93,8 +93,7 @@ sub report_errors {
         return;
     }
 
-    my $email_subject =
-      $self->{data}->{email_subject}
+    my $email_subject = $self->{data}->{email_subject}
       || (
         "[" . $self->{parent}->{id} . ']: Front-Matter Plugin Parse Errors' );
 
