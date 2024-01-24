@@ -1,0 +1,20 @@
+#!/usr/bin/env perl
+
+# Import necessary modules or libraries
+use strict;
+use warnings;
+
+# Define the test hook script
+sub run_tests {
+    # Add necessary steps or configurations for running tests
+    # For example:
+    # - Set up the test environment
+    # - Install dependencies
+    # - Execute the tests
+    
+    # Example test execution
+    system("prove -r t/");
+}
+
+# Run the tests
+run_tests();

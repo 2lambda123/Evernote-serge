@@ -46,16 +46,16 @@ use File::Basename;
 
 # parameters that must be set in the config, otherwise the script won't run
 our $data_dir         = ''; # root directory where the master branch checkout is located
-our $template_file    = ''; # where to load Serge config template from
+our $template_file    = ''; # where to load the Serge config template from
 our $output_file      = ''; # where to save the localized Serge config file
 our $skip_commit_mask = ''; # filter out commits matching this mask (see $commit_format)
 
 # defaults (may be overridden in the config)
-our $calculate_params; # the function that generates additional job config variables to insert into template
-our $branch_list_file     = ''; # path to the text file which contains the list of branches to include/exclude
-our $old_branch_threshold = 15 * 60*60*24; # after 15 days since last push, the branch is considered "old"
+our $calculate_params; # the function that generates additional job config variables to insert into the template
+our $branch_list_file     = ''; # path to the text file that contains the list of branches to include/exclude
+our $old_branch_threshold = 15 * 60*60*24; # after 15 days since the last push, the branch is considered "old"
 our $commit_format        = "%ce;%ci"; # how to render commits for analysis
-our $commit_depth         = 500; # how may latest commits to analyze
+our $commit_depth         = 500; # how many latest commits to analyze
 our $upstream_name        = 'origin'; # use this upstream name
 our $skip_branch_mask     = '^(master|develop)$'; # skip these branches unconditionally
 our $unmerged_branch_mask = '^feature/'; # process unmerged branches matching this mask
@@ -208,7 +208,6 @@ print "Done\n\n";
 # go through found branches
 
 print "Analyzing branches...\n";
-
 my @feature_branches;
 my $now = time;
 

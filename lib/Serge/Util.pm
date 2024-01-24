@@ -537,7 +537,7 @@ sub read_and_normalize_file {
     my $data = join('', <SRC>);
     close(SRC);
 
-    my $decoder = Encode::Guess->guess($data);
+    my $decoder = Encode::Guess->guess(Encode::FB_DEFAULT, $data);
     if (ref($decoder)) {
         my $enc = uc($decoder->name);
 
