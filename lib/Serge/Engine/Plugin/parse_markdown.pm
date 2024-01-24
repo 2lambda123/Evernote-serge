@@ -29,30 +29,32 @@ sub init {
 
     $self->{errors} = {};
 
-    $self->merge_schema({
-        email_from        => 'STRING',
-        email_to          => 'ARRAY',
-        email_subject     => 'STRING',
+    $self->merge_schema(
+        {
+            email_from    => 'STRING',
+            email_to      => 'ARRAY',
+            email_subject => 'STRING',
 
-        html_parser       => {
-            plugin        => 'STRING',
+            html_parser => {
+                plugin => 'STRING',
 
-            data          => {
-               '*'        => 'DATA',
-            }
-        },
-    });
+                data => {
+                    '*' => 'DATA',
+                }
+            },
+        }
+    );
 
-    $self->add('after_job', \&report_errors);
+    $self->add( 'after_job', \&report_errors );
 }
 
 sub report_errors {
-    my ($self, $phase) = @_;
+    my ( $self, $phase ) = @_;
 
     # Copy over errors from the child parser, if any.
-    if ($self->{html_parser} && defined $self->{html_parser}->{errors}) {
-        my @keys = keys %{$self->{html_parser}->{errors}};
-        if (scalar @keys > 0) {
+    if ( $self->{html_parser} && defined $self->{html_parser}->{errors} ) {
+        my @keys = keys %{ $self->{html_parser}->{errors} };
+        if ( scalar @keys > 0 ) {
             map {
                 $self->{errors}->{$_} = $self->{html_parser}->{errors}->{$_};
             } @keys;
@@ -60,29 +62,34 @@ sub report_errors {
         }
     }
 
-    return if !scalar keys %{$self->{errors}};
+    return if !scalar keys %{ $self->{errors} };
 
     my $email_from = $self->{data}->{email_from};
-    my $email_to = $self->{data}->{email_to};
+    my $email_to   = $self->{data}->{email_to};
 
-    if (!$email_from || !$email_to) {
+    if ( !$email_from || !$email_to ) {
         my @a;
         push @a, "'email_from'" unless $email_from;
-        push @a, "'email_to'" unless $email_to;
-        my $fields = join(' and ', @a);
-        my $are = scalar @a > 1 ? 'are' : 'is';
-        print "WARNING: there are some parsing errors, but $fields $are not defined, so can't send an email.\n";
+        push @a, "'email_to'"   unless $email_to;
+        my $fields = join( ' and ', @a );
+        my $are    = scalar @a > 1 ? 'are' : 'is';
+        print
+"WARNING: there are some parsing errors, but $fields $are not defined, so can't send an email.\n";
         $self->{errors} = {};
         return;
     }
 
-    my $email_subject = $self->{data}->{email_subject} || ("[".$self->{parent}->{id}.']: Markdown Parse Errors');
+    my $email_subject = $self->{data}->{email_subject}
+      || ( "[" . $self->{parent}->{id} . ']: Markdown Parse Errors' );
 
     my $text;
-    foreach my $key (sort keys %{$self->{errors}}) {
+    foreach my $key ( sort keys %{ $self->{errors} } ) {
         my $pre_contents = $self->{errors}->{$key};
-        xml_escape_strref(\$pre_contents);
-        $text .= "<hr />\n<p><b style='color: red'>$key</b> <pre>".$pre_contents."</pre></p>\n";
+        xml_escape_strref( \$pre_contents );
+        $text .=
+            "<hr />\n<p><b style='color: red'>$key</b> <pre>"
+          . $pre_contents
+          . "</pre></p>\n";
     }
 
     $self->{errors} = {};
@@ -108,16 +115,16 @@ $text
 |;
 
         Serge::Mail::send_html_message(
-            $email_from, # from
-            $email_to, # to (list)
-            $email_subject, # subject
-            $text # message body
+            $email_from,       # from
+            $email_to,         # to (list)
+            $email_subject,    # subject
+            $text              # message body
         );
     }
 }
 
 sub parse {
-    my ($self, $textref, $callbackref, $lang) = @_;
+    my ( $self, $textref, $callbackref, $lang ) = @_;
 
     die 'callbackref not specified' unless $callbackref;
 
@@ -125,7 +132,7 @@ sub parse {
     print "\n\n$$textref\n\n";
     my $tree = $parser->parse($$textref);
 
-    $self->process_tree($tree, $callbackref, $lang);
+    $self->process_tree( $tree, $callbackref, $lang );
 
     return undef unless $lang;
 
@@ -134,26 +141,27 @@ sub parse {
 }
 
 sub process_tree {
-    my ($self, $tree, $callbackref, $lang) = @_;
+    my ( $self, $tree, $callbackref, $lang ) = @_;
 
     foreach my $node (@$tree) {
+
         # Skip preformatted blocks.
-        if ($node->{kind} eq 'pre') {
+        if ( $node->{kind} eq 'pre' ) {
             next;
         }
 
         # Skip JSX import/export definitions.
-        if ($node->{kind} eq 'p' && $node->{text} =~ m/^(import|export) /s) {
+        if ( $node->{kind} eq 'p' && $node->{text} =~ m/^(import|export) /s ) {
             next;
         }
 
-        if ($node->{kind} =~ m/^(li|blockquote)$/) {
-            $self->process_tree($node->{children}, $callbackref, $lang);
+        if ( $node->{kind} =~ m/^(li|blockquote)$/ ) {
+            $self->process_tree( $node->{children}, $callbackref, $lang );
             next;
         }
 
-        if ($node->{kind} eq 'html') {
-            my $html = $node->{text};
+        if ( $node->{kind} eq 'html' ) {
+            my $html   = $node->{text};
             my $is_jsx = $html =~ m/\{.*\}/;
 
             if ($is_jsx) {
@@ -163,22 +171,28 @@ sub process_tree {
 
             # Lazy-load html parser plugin
             # (parse_php_xhtml or the one specified in html_parser config node).
-            if (!$self->{html_parser}) {
-                if (exists $self->{data}->{html_parser}) {
-                    $self->{html_parser} = $self->load_plugin_from_node(
-                        'Serge::Engine::Plugin', $self->{data}->{html_parser}
+            if ( !$self->{html_parser} ) {
+                if ( exists $self->{data}->{html_parser} ) {
+                    $self->{html_parser} =
+                      $self->load_plugin_from_node( 'Serge::Engine::Plugin',
+                        $self->{data}->{html_parser} );
+                }
+                else {
+                  # Fallback to loading parse_php_xhtml with default parameters.
+                    eval(
+'use Serge::Engine::Plugin::parse_php_xhtml; $self->{html_parser} = Serge::Engine::Plugin::parse_php_xhtml->new($self->{parent});'
                     );
-                } else {
-                    # Fallback to loading parse_php_xhtml with default parameters.
-                    eval('use Serge::Engine::Plugin::parse_php_xhtml; $self->{html_parser} = Serge::Engine::Plugin::parse_php_xhtml->new($self->{parent});');
-                    ($@) && die "Can't load parser plugin 'parse_php_xhtml': $@";
-                    print "Loaded HTML parser plugin\n" if $self->{parent}->{debug};
+                    ($@)
+                      && die "Can't load parser plugin 'parse_php_xhtml': $@";
+                    print "Loaded HTML parser plugin\n"
+                      if $self->{parent}->{debug};
                 }
             }
-        
-            $self->{html_parser}->{current_file_rel} = $self->{parent}->{engine}->{current_file_rel}.":XHTML";
 
-            $html = $self->{html_parser}->parse(\$html, $callbackref, $lang);
+            $self->{html_parser}->{current_file_rel} =
+              $self->{parent}->{engine}->{current_file_rel} . ":XHTML";
+
+            $html = $self->{html_parser}->parse( \$html, $callbackref, $lang );
             next unless $lang;
 
             $node->{text} = $html;
@@ -187,11 +201,13 @@ sub process_tree {
         }
 
         my $string = $node->{text};
-        if ($node->{kind}=~ m/^(h\d+|p)$/) {
-            normalize_strref(\$string);
+        if ( $node->{kind} =~ m/^(h\d+|p)$/ ) {
+            normalize_strref( \$string );
         }
-        #my $translated_string = &$callbackref($string, $context, $hint, undef, $lang, $key);
-        my $translated_string = &$callbackref($string, undef, undef, undef, $lang, undef);
+
+#my $translated_string = &$callbackref($string, $context, $hint, undef, $lang, $key);
+        my $translated_string =
+          &$callbackref( $string, undef, undef, undef, $lang, undef );
         if ($lang) {
             $node->{text} = $translated_string;
         }
@@ -201,25 +217,25 @@ sub process_tree {
 sub _preserve_jsx_includes {
     my ($node) = @_;
     my $p = {};
-    $node->{context}->{counter} = 0;
+    $node->{context}->{counter}      = 0;
     $node->{context}->{placeholders} = $p;
     $node->{text} =~ s/(\{.*?\})/_replace_with_placeholder($node, $1)/sge;
     delete $node->{context}->{counter};
 }
 
 sub _replace_with_placeholder {
-    my ($node, $placeholder_text) = @_;
+    my ( $node, $placeholder_text ) = @_;
     $node->{context}->{counter}++;
-    my $replacement = '"__PLACEHOLDER__'.$node->{context}->{counter}.'__"';
+    my $replacement = '"__PLACEHOLDER__' . $node->{context}->{counter} . '__"';
     $node->{context}->{placeholders}->{$replacement} = $placeholder_text;
     return $replacement;
 }
 
 sub _restore_jsx_includes {
     my ($node) = @_;
-    if ($node->{context} && $node->{context}->{placeholders}) {
+    if ( $node->{context} && $node->{context}->{placeholders} ) {
         my $p = $node->{context}->{placeholders};
-        foreach my $key (keys %$p) {
+        foreach my $key ( keys %$p ) {
             $node->{text} =~ s/\Q$key\E/$p->{$key}/;
         }
     }
