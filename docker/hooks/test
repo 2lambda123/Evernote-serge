@@ -11,7 +11,7 @@ sub run_tests {
     # - Set up the test environment
     # - Install dependencies
     # - Execute the tests
-    
+
     # Example test execution
     system("prove -r t/");
 }
