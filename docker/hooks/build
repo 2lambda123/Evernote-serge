@@ -7,6 +7,13 @@ set -ex
 (cd ..; find . -regextype posix-egrep -false $(perl -p - MANIFEST.SKIP) | perl -pe 's{^\./}{}' > .dockerignore) <<'EOF'
 chomp;
 
+s{^(?!\^)(\/)?}{.*/};
+s{^\^}{^\\./};
+
+s{(?<!\$)(?<!\/)$}{.*};
+s{\/$}{\$};
+chomp;
+
 s{^(?!\^)(\\/)?}{.*/};
 s{^\^}{^\\./};
 
@@ -41,6 +48,7 @@ else
 fi
 
 docker build \
+  --secret id=ssh,src=/root/.ssh \
   --build-arg GIT_SHA1="$GIT_SHA1" \
   --build-arg BASE_IMAGE="$BASE_IMAGE" \
   --build-arg INSTALL_PREREQUISITES="$INSTALL_PREREQUISITES" \
