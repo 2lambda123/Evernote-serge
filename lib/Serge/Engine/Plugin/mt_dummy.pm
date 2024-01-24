@@ -9,9 +9,9 @@ sub name {
 }
 
 sub mt_get_translation {
-    my ($self, $src_lang, $target_lang, $s) = @_;
+    my ( $self, $src_lang, $target_lang, $s ) = @_;
 
-    return "[mt:$src_lang:$target_lang]".$s.'[/mt]';
+    return "[mt:$src_lang:$target_lang]" . $s . '[/mt]';
 }
 
 1;

@@ -19,11 +19,13 @@ sub init {
     Serge::Engine::Plugin::Base::MT::init(@_);
     Serge::Plugin::Base::HTTP::init(@_);
 
-    $self->merge_schema({
-        api_key          => 'STRING',
-        provider         => 'STRING',
-        provider_api_key => 'STRING',
-    });
+    $self->merge_schema(
+        {
+            api_key          => 'STRING',
+            provider         => 'STRING',
+            provider_api_key => 'STRING',
+        }
+    );
 }
 
 sub validate_data {
@@ -31,21 +33,18 @@ sub validate_data {
 
     $self->SUPER::validate_data;
 
-    map {
-        $self->{data}->{$_} = subst_macros($self->{data}->{$_});
-    } qw(api_key proivder provider_api_key);
+    map { $self->{data}->{$_} = subst_macros( $self->{data}->{$_} ); }
+      qw(api_key proivder provider_api_key);
 
     die "'api_key' not defined" if $self->{data}->{api_key} eq '';
 }
 
 sub mt_get_translation {
-    my ($self, $src_lang, $target_lang, $s) = @_;
+    my ( $self, $src_lang, $target_lang, $s ) = @_;
 
     my $url = "https://api.inten.to/ai/text/translate";
 
-    my $header = [
-        apikey => $self->{data}->{api_key}
-    ];
+    my $header = [ apikey => $self->{data}->{api_key} ];
 
     my $body = {
         context => {
@@ -56,25 +55,24 @@ sub mt_get_translation {
     };
 
     my $provider = $self->{data}->{provider};
-    if (defined $provider) {
-        $body->{service} = {
-            provider => $provider
-        };
+    if ( defined $provider ) {
+        $body->{service} = { provider => $provider };
 
-        if (defined $self->{data}->{provider_api_key}) {
+        if ( defined $self->{data}->{provider_api_key} ) {
             $body->{service}->{auth} = {
                 $provider => [
                     {
                         key => $self->{data}->{provider_api_key}
                     }
                 ]
-            }
+            };
         }
     }
 
-    my ($code, $content) = $self->http_post($url, $header, encode_json($body));
+    my ( $code, $content ) =
+      $self->http_post( $url, $header, encode_json($body) );
 
-    if ($code != 200) {
+    if ( $code != 200 ) {
         print "[mt_intento] code: [$code]\n";
         print "[mt_intento] content: [$content]\n";
         return undef;

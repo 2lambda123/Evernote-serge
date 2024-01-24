@@ -19,9 +19,11 @@ sub init {
     Serge::Engine::Plugin::Base::MT::init(@_);
     Serge::Plugin::Base::HTTP::init(@_);
 
-    $self->merge_schema({
-        api_key => 'STRING',
-    });
+    $self->merge_schema(
+        {
+            api_key => 'STRING',
+        }
+    );
 }
 
 sub validate_data {
@@ -29,13 +31,13 @@ sub validate_data {
 
     $self->SUPER::validate_data;
 
-    $self->{data}->{api_key} = subst_macros($self->{data}->{api_key});
+    $self->{data}->{api_key} = subst_macros( $self->{data}->{api_key} );
 
     die "'api_key' not defined" if $self->{data}->{api_key} eq '';
 }
 
 sub mt_get_translation {
-    my ($self, $src_lang, $target_lang, $s) = @_;
+    my ( $self, $src_lang, $target_lang, $s ) = @_;
 
     my $url = Serge::Plugin::Base::HTTP::make_url(
         "https://translation.googleapis.com/language/translate/v2",
@@ -48,9 +50,9 @@ sub mt_get_translation {
         }
     );
 
-    my ($code, $content) = $self->http_post($url);
+    my ( $code, $content ) = $self->http_post($url);
 
-    if ($code != 200) {
+    if ( $code != 200 ) {
         print "[mt_google] code: [$code]\n";
         print "[mt_google] content: [$content]\n";
         return undef;
