@@ -25,7 +25,7 @@ EOF
 
 # END .dockerignore hack
 
-if echo $DOCKER_TAG | grep -q alpine ; then
+if echo "$DOCKER_TAG" | grep -q alpine ; then
   echo '[****] Building alpine image (ignore the ARG defaults in the output below, they will be overriden)'
   BASE_IMAGE=alpine:3.8
   ADD_REPOS='echo -e @edge http://dl-cdn.alpinelinux.org/alpine/edge/main\\n@testing http://nl.alpinelinux.org/alpine/edge/testing >> /etc/apk/repositories'
@@ -42,9 +42,9 @@ if echo $DOCKER_TAG | grep -q alpine ; then
 else
   echo '[****] Building debian image'
   # Use the values in the Docker file, so that we do not have them in two places, allowing divergence
-  BASE_IMAGE=`grep BASE_IMAGE= Dockerfile | sed -e 's/.*=//'`
-  INSTALL_PREREQUISITES=`grep 'INSTALL_PREREQUISITES=' Dockerfile | sed -E 's/.*="(.*)"$/\1/'`
-  CLEAN_PREREQUISITES=`grep 'CLEAN_PREREQUISITES=' Dockerfile | sed -E 's/.*="(.*)"$/\1/'`
+  BASE_IMAGE=$(grep BASE_IMAGE= Dockerfile | sed -e 's/.*=//')
+  INSTALL_PREREQUISITES=$(grep 'INSTALL_PREREQUISITES=' Dockerfile | sed -E 's/.*="(.*)"$/\1/')
+  CLEAN_PREREQUISITES=$(grep 'CLEAN_PREREQUISITES=' Dockerfile | sed -E 's/.*="(.*)"$/\1/')
 fi
 
 docker build \
@@ -53,4 +53,4 @@ docker build \
   --build-arg BASE_IMAGE="$BASE_IMAGE" \
   --build-arg INSTALL_PREREQUISITES="$INSTALL_PREREQUISITES" \
   --build-arg CLEAN_PREREQUISITES="$CLEAN_PREREQUISITES" \
-  -t ${IMAGE_NAME} -f ./Dockerfile ..
+  -t "${IMAGE_NAME}" -f ./Dockerfile ..
