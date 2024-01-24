@@ -2,7 +2,7 @@ ARG BASE_IMAGE=debian:stretch
 
 FROM ${BASE_IMAGE}
 
-ARG INSTALL_PREREQUISITES="apt-get -qq -y update && apt-get -qq -y install make cpanminus libscalar-list-utils-perl libxml-parser-perl libxml-xpath-perl libxml-libxslt-perl libtext-diff-perl libyaml-perl libmime-lite-perl libfile-copy-recursive-perl libauthen-sasl-perl libxml-twig-perl libtext-csv-xs-perl libjson-perl libjson-xs-perl libnet-smtp-ssl-perl libcpan-sqlite-perl libio-string-perl"
+ARG INSTALL_PREREQUISITES="apt-get -qq -y update && apt-get -qq -y install make cpanminus libscalar-list-utils-perl libxml-parser-perl libxml-xpath-perl libxml-libxslt-perl libtext-diff-perl libyaml-perl libmime-lite-perl libfile-copy-recursive-perl libauthen-sasl-perl libxml-twig-perl libtext-csv-xs-perl libjson-perl libjson-xs-perl libnet-smtp-ssl-perl libcpan-sqlite-perl libio-string-perl libyaml-libyaml-perl libyaml-tiny-perl libyaml-xs-perl"
 ARG CLEAN_PREREQUISITES="apt-get -qq -y purge make cpanminus"
 ARG GIT_SHA1="CUSTOM BUILD"
 
@@ -18,11 +18,7 @@ RUN set -ex \
     && rm /tmp/prereq \
     && cpanm --no-wget --installdeps /serge \
     && rm -rf /root/.cpan* /usr/local/share/man \
-    && mkdir -p /data \
-    && cp /serge/doc/sample.serge /data \
-    && echo ${CLEAN_PREREQUISITES} > /tmp/prereq \
-    && . /tmp/prereq \
-    && rm /tmp/prereq
+    && cp /serge/doc/sample.serge /data
 
 ENV PATH="/serge/bin:${PATH}"
 ENV PERL5LIB="/serge/lib${PERL5LIB:+:}${PERL5LIB}"
